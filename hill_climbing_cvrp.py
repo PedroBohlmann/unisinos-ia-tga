@@ -7,3 +7,6 @@
 
 # Proposta:
 # - Criem arquivos paralelos fazendo os testes que julgarem necessários. Depois vamos implementando cada parte do projeto.
+
+# tupla (id, x, y)
+# tupla (id, quant)
