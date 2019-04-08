@@ -15,9 +15,9 @@ O objetivo é encontrar um roteamento (que cidades cada caminhão deve visitar
 - [eil33](CVRP/eil33.vrp.txt)
 - [eilc76](CVRP/eilc76.vrp.txt)
 
+![](img/img-1.png)
 
 ## Formato dos arquivos
-
 Cada linha pode especificar um dos itens abaixo (as linhas):
 
 - Capacidade dos caminhões (linha vermelha).
@@ -28,13 +28,15 @@ coordenadas do nó identificado por id. O id de número 1 corresponde ao depo�
 - Comentários (linhas azuis), que podem ser ignorados.
 
 ### Exemplo
-
 ```
 CAPACITY: 180
 NODE_COORD_SECTION
 1 40 40
 2 22 22
 3 36 26
-... DEMAND_SECTION 10
-2 18 3 26 ...
+... DEMAND_SECTION
+1 0
+2 18
+3 26
+...
 ```
