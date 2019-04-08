@@ -1,7 +1,7 @@
 # Roteamento de Veículos utilizando Hill Climbing
+> Capacitated vehicle routing problem (CVRP)
 
-Capacitated vehicle routing problem (CVRP)
-Descrição
+## Descrição
 O problema de roteamento de veículos capacitados é definido por um conjunto de n nós (representando n-1 clientes e 1 depósito) e a distância entre cada par de nós. Cada cliente possui uma demanda por mercadorias, que são fornecidos pelo depósito. Temos à disposição um conjunto de caminhões (todos de igual capacidade) que podem ser utilizados para entregar as mercadorias. O objetivo é encontrar um roteamento (que cidades cada caminhão deve visitar e em que ordem) capaz de atender à demanda por mercadorias de todos os clientes sem violar a capacidade dos caminhões, bem como minimizar: (i) a quantidade de caminhões utilizados, (ii) a soma da distância percorrida por todos os caminhões.
 Instâncias disponíveis
 - [att48](CVRP/att48.vrp.txt)
