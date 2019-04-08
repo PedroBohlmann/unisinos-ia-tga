@@ -6,16 +6,17 @@ from optparse import OptionParser
 class cvrp:
     def __init__(self, filename):
         self.filename = filename
-        self.deposits = []
-        self.depositCount = 0
+        self.nodes = []
+        self.nodesCount = 0
         self.capacity = 0
+        self.deposit = None
         self.init_data(self.filename)
         self.cost = self.calc_cost()
 
     def init_data(self,filename):
         node_coord = False
         node_demand = False
-        depositCount = 0
+        nodesCount = 0
         with open (filename, 'rt') as file:
             for line in file:
                 if "NODE_COORD_SECTION" in line:
@@ -29,30 +30,33 @@ class cvrp:
                     # do something
                     continue
                 elif "CAPACITY" in line:
-                    self.capacity = line[9:]
+                    self.capacity = line[9:-1] #-1 para remover o \n
                     continue
                 else:
                     if node_coord == True:
-                        depositCount = depositCount + 1
+                        nodesCount = nodesCount + 1
                         (deposit, x, y) = line.split()
-                        self.deposits.append([deposit,x,y,0])
-                        # print(self.deposits)
+                        self.nodes.append([deposit,x,y,0])
+                        # print(self.nodes)
                     elif node_demand == True:
-                        self.depositCount = depositCount
+                        self.nodesCount = nodesCount
                         (deposit, quantity) = line.split()
-                        self.deposits[int(deposit)-1] = [self.deposits[int(deposit)-1][0],self.deposits[int(deposit)-1][1],self.deposits[int(deposit)-1][2],quantity]
+                        self.nodes[int(deposit)-1] = [self.nodes[int(deposit)-1][0],self.nodes[int(deposit)-1][1],self.nodes[int(deposit)-1][2],quantity]
                         continue
                     continue
+        self.deposit = self.nodes[0]
+        self.nodes.pop(0)
 
     def printStatus(self):
         print("\n")
         print("======")
         print("STATUS")
         print("======")
-        print("Quantidade Depositos = ", self.depositCount)
+        print("Quantidade Depositos = ", self.nodesCount)
         print("Capacidade = ", self.capacity)
-        print("Depositos:")
-        for i in self.deposits:
+        print("Deposito = ", self.deposit)
+        print("Nós:")
+        for i in self.nodes:
             print(i)
 
     def hill_climbing():
