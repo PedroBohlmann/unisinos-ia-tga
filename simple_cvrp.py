@@ -10,20 +10,21 @@ class cvrp:
     def __init__(self, filename, truck_count):
         self.filename = filename
         self.nodes = []
-        self.nodesCount = 0
+        self.nodes_count = 0
         self.capacity = 0
         self.deposit = None
         self.init_data(self.filename)
         self.truck_count = truck_count
         self.trucks = []
         self.init_trucks()
-
-        self.hill_climbing()
+        self.solution = self.hill_climbing()
+        self.calc_cost_route(self.solution[0])
+        self.total_distance = self.calc_total_distance()
 
     def init_data(self,filename):
         node_coord = False
         node_demand = False
-        nodesCount = 0
+        nodes_count = 0
         with open (filename, 'rt') as file:
             for line in file:
                 if "NODE_COORD_SECTION" in line:
@@ -41,14 +42,14 @@ class cvrp:
                     continue
                 else:
                     if node_coord == True:
-                        nodesCount = nodesCount + 1
+                        nodes_count = nodes_count + 1
                         (deposit, x, y) = line.split()
-                        self.nodes.append([deposit,x,y,0])
+                        self.nodes.append([deposit, int(x), int(y), 0])
                         # print(self.nodes)
                     elif node_demand == True:
-                        self.nodesCount = nodesCount
+                        self.nodes_count = nodes_count
                         (deposit, quantity) = line.split()
-                        self.nodes[int(deposit)-1] = [self.nodes[int(deposit)-1][0],self.nodes[int(deposit)-1][1],self.nodes[int(deposit)-1][2],quantity]
+                        self.nodes[int(deposit)-1] = [self.nodes[int(deposit)-1][0], self.nodes[int(deposit)-1][1], self.nodes[int(deposit)-1][2], int(quantity)]
                         continue
                     continue
         self.deposit = self.nodes[0]
@@ -58,13 +59,13 @@ class cvrp:
         return self.nodes[int(index)][1],self.nodes[int(index)][2]
 
     def printStatus(self):
-        print("\n")
         print("======")
         print("STATUS")
         print("======")
-        print("Quantidade Depositos = ", self.nodesCount)
+        print("Quantidade Depositos = ", self.nodes_count)
         print("Capacidade = ", self.capacity)
         print("Deposito = ", self.deposit)
+        print("Distancia total = ", self.total_distance)
         # print("Nós:")
         # for i in self.nodes:
         #     print(i)
@@ -87,11 +88,11 @@ class cvrp:
 
         (xSmall, ySmall) = self.retrieve_data(smallest_pos)
 
-        smallest_cost = self.calc_cost(int(xSmall), int(xTruck), int(ySmall), int(yTruck))
+        smallest_cost = self.calc_cost(xSmall, xTruck, ySmall, yTruck)
 
         pos = 0
         for node in self.nodes:
-            cost = self.calc_cost(int(node[1]), int(xTruck), int(node[2]), int(yTruck))
+            cost = self.calc_cost(node[1], xTruck, node[2], yTruck)
             if cost < smallest_cost and len(node) != 5 and (truck-int(node[3]) >= 0):
                 smallest_cost = cost
                 smallest_pos = pos
@@ -104,7 +105,7 @@ class cvrp:
     def hill_climbing(self):
         all_solutions = []
         for i in range(len(self.trucks)):
-            current_solution= []
+            current_solution = []
             truck = self.trucks[i]
             has_nodes = True
             while truck > 0 and has_nodes:
@@ -120,7 +121,33 @@ class cvrp:
                     truck = truck - int(self.get_cost(node)) # update truck capacity
             self.trucks[i] = truck # update truck capacity
             all_solutions.append(current_solution)
+
+        # generate neighborhood
+        # running through neighbor until there is no other change
+            # look for the best change
+            # execute change
+
         return all_solutions
+
+    def calc_cost_route(self, nodes):
+        total = 0
+        for i in range(len(nodes)):
+            node = self.nodes[i]
+            if i == 0:
+                total += self.calc_cost(self.deposit[1], node[1], self.deposit[2], node[2])
+                if i+1 < len(nodes):
+                    total += self.calc_cost(node[1], self.nodes[i+1][1], node[2], self.nodes[i+1][2])
+            elif i == len(nodes)-1:
+                total += self.calc_cost(node[1], self.deposit[1], node[2], self.deposit[2])
+            else:
+                total += self.calc_cost(node[1], self.nodes[i+1][1], node[2], self.nodes[i+1][2])
+        return total
+
+    def calc_total_distance(self):
+        total = 0
+        for solution in self.solution:
+            total += self.calc_cost_route(solution)
+        return total
 
     def calc_cost(self, xa, xb, ya, yb):
         return math.sqrt(((xa-xb) * (xa-xb))+((ya-yb) * (ya-yb)))
@@ -159,4 +186,3 @@ if __name__ == "__main__":
 
     CVRP = cvrp(options.filename, options.truck_count)
     CVRP.printStatus()
-    print("OK")
