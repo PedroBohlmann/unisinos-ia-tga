@@ -109,8 +109,9 @@ class cvrp:
 
     def hill_climbing(self):
         all_solutions = []
-        for truck in self.trucks:
+        for i in range(len(self.trucks)):
             current_solution= []
+            truck = self.trucks[i]
             has_nodes = True
             while truck > 0 and has_nodes:
                 if len(current_solution) == 0:
@@ -120,12 +121,12 @@ class cvrp:
                     node = self.findClosestAfordableNode(truck, xTruck, yTruck)
                 if node is None:
                     has_nodes = False # has no more close nodes with enough capacity to supply
-                    current_solution.append(self.deposit) # add return to deposit
                 else:
                     current_solution.append(node)
                     truck = truck - int(self.get_cost(node)) # update truck capacity
+            self.trucks[i] = truck # update truck capacity
             all_solutions.append(current_solution)
-        return 0
+        return all_solutions
 
     def calc_cost(self, xa, xb, ya, yb):
         return math.sqrt(((xa-xb) * (xa-xb))+((ya-yb) * (ya-yb)))
