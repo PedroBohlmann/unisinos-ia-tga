@@ -65,7 +65,6 @@ class cvrp:
         print("Quantidade Depositos = ", self.nodesCount)
         print("Capacidade = ", self.capacity)
         print("Deposito = ", self.deposit)
-        print("Custo = ", self.cost)
         # print("Nós:")
         # for i in self.nodes:
         #     print(i)
