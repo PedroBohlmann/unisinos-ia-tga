@@ -18,11 +18,6 @@ class cvrp:
         self.trucks = []
         self.init_trucks()
 
-        # test one cost
-        (xa, ya) = self.retrieve_data(2)
-        (xb, yb) = self.retrieve_data(1)
-        self.cost = self.calc_cost(int(xa), int(xb), int(ya), int(yb))
-
         self.hill_climbing()
 
     def init_data(self,filename):
