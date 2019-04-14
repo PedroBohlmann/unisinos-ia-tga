@@ -7,18 +7,23 @@ from optparse import OptionParser
 solution = [[1,1,2,3,4,5,6,7,8,9,10]]
 
 class cvrp:
-    def __init__(self, filename):
+    def __init__(self, filename, truck_count):
         self.filename = filename
         self.nodes = []
         self.nodesCount = 0
         self.capacity = 0
         self.deposit = None
         self.init_data(self.filename)
+        self.truck_count = truck_count
+        self.trucks = []
+        self.init_trucks()
 
         # test one cost
         (xa, ya) = self.retrieve_data(2)
         (xb, yb) = self.retrieve_data(1)
         self.cost = self.calc_cost(int(xa), int(xb), int(ya), int(yb))
+
+        self.hill_climbing()
 
     def init_data(self,filename):
         node_coord = False
@@ -70,11 +75,66 @@ class cvrp:
         # for i in self.nodes:
         #     print(i)
 
-    def hill_climbing():
+    def init_trucks(self):
+        for i in range(self.truck_count):
+            self.trucks.append(int(self.capacity))
+
+    def get_first_not_flagged_node(self):
+        pos = 0
+        for node in self.nodes:
+            if len(node) != 5:
+                return pos
+            pos = pos + 1
+
+    def findClosestAfordableNode(self, truck, xTruck, yTruck):
+        smallest_pos = self.get_first_not_flagged_node()
+        if smallest_pos is None:
+            return None
+
+        (xSmall, ySmall) = self.retrieve_data(smallest_pos)
+
+        smallest_cost = self.calc_cost(int(xSmall), int(xTruck), int(ySmall), int(yTruck))
+
+        pos = 0
+        for node in self.nodes:
+            cost = self.calc_cost(int(node[1]), int(xTruck), int(node[2]), int(yTruck))
+            if cost < smallest_cost and len(node) != 5 and (truck-int(node[3]) >= 0):
+                smallest_cost = cost
+                smallest_pos = pos
+            pos = pos + 1
+        if (truck-int(self.nodes[smallest_pos][3])) < 0:
+            return None
+        self.nodes[smallest_pos].append(False)
+        return smallest_pos
+
+    def hill_climbing(self):
+        all_solutions = []
+        for truck in self.trucks:
+            current_solution= []
+            has_nodes = True
+            while truck > 0 and has_nodes:
+                if len(current_solution) == 0:
+                    node = self.findClosestAfordableNode(truck, self.deposit[1], self.deposit[2])
+                else:
+                    (xTruck, yTruck) = self.retrieve_data(current_solution[-1])
+                    node = self.findClosestAfordableNode(truck, xTruck, yTruck)
+                if node is None:
+                    has_nodes = False # has no more close nodes with enough capacity to supply
+                    current_solution.append(self.deposit) # add return to deposit
+                else:
+                    current_solution.append(node)
+                    truck = truck - int(self.get_cost(node)) # update truck capacity
+            all_solutions.append(current_solution)
         return 0
 
     def calc_cost(self, xa, xb, ya, yb):
         return math.sqrt(((xa-xb) * (xa-xb))+((ya-yb) * (ya-yb)))
+
+    def get_cost(self, pos):
+        if not self.nodes:
+            return None
+        else:
+            return self.nodes[pos][3]
 
     def check_quantity(self):
         qtyOk = 0
@@ -97,9 +157,11 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("--file", dest="filename", help="Path of file", default="CVRP/eil33.vrp.txt",
                      type="string")
+    parser.add_option("--trucks", dest="truck_count", help="Quantity of trucks", default="4",
+                     type="int")
 
     (options, args) = parser.parse_args()
 
-    CVRP = cvrp(options.filename)
+    CVRP = cvrp(options.filename, options.truck_count)
     CVRP.printStatus()
     print("OK")
