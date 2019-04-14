@@ -80,7 +80,7 @@ class cvrp:
                 return pos
             pos = pos + 1
 
-    def findClosestAfordableNode(self, truck, xTruck, yTruck):
+    def find_closest_afordable_node(self, truck, xTruck, yTruck):
         smallest_pos = self.get_first_not_flagged_node()
         if smallest_pos is None:
             return None
@@ -109,10 +109,10 @@ class cvrp:
             has_nodes = True
             while truck > 0 and has_nodes:
                 if len(current_solution) == 0:
-                    node = self.findClosestAfordableNode(truck, self.deposit[1], self.deposit[2])
+                    node = self.find_closest_afordable_node(truck, self.deposit[1], self.deposit[2])
                 else:
                     (xTruck, yTruck) = self.retrieve_data(current_solution[-1])
-                    node = self.findClosestAfordableNode(truck, xTruck, yTruck)
+                    node = self.find_closest_afordable_node(truck, xTruck, yTruck)
                 if node is None:
                     has_nodes = False # has no more close nodes with enough capacity to supply
                 else:
