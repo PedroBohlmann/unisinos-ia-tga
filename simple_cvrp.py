@@ -1,7 +1,8 @@
 # COMO USAR python simple_cvrp.py --file "CVRP/test.txt"
 
-import random,sys,copy,math
+import random, sys, copy, math
 from optparse import OptionParser
+from random import randint
 
 #          truck,node1,node2,node3,node4
 solution = [[1,1,2,3,4,5,6,7,8,9,10]]
@@ -17,8 +18,7 @@ class cvrp:
         self.truck_count = truck_count
         self.trucks = []
         self.init_trucks()
-        self.solution = self.hill_climbing()
-        self.calc_cost_route(self.solution[0])
+        self.solution = self.init_solution()
         self.total_distance = self.calc_total_distance()
 
     def init_data(self,filename):
@@ -66,9 +66,13 @@ class cvrp:
         print("Capacidade = ", self.capacity)
         print("Deposito = ", self.deposit)
         print("Distancia total = ", self.total_distance)
+        print("Trucks = ", self.trucks)
         # print("Nós:")
-        # for i in self.nodes:
-        #     print(i)
+        total = 0
+        for i in range(len(self.nodes)):
+            if len(self.nodes[i]) == 5:
+                total += 1
+        print(total)
 
     def init_trucks(self):
         for i in range(self.truck_count):
@@ -80,6 +84,13 @@ class cvrp:
             if len(node) != 5:
                 return pos
             pos = pos + 1
+    
+    def count_available_nodes(self):
+        count = 0
+        for node in self.nodes:
+            if len(node) != 5:
+                count += 1
+        return count
 
     def find_closest_afordable_node(self, truck, xTruck, yTruck):
         smallest_pos = self.get_first_not_flagged_node()
@@ -102,18 +113,24 @@ class cvrp:
         self.nodes[smallest_pos].append(False)
         return smallest_pos
 
-    def hill_climbing(self):
+    def find_random_node(self):
+        node = None
+        has_node = self.count_available_nodes() > 0
+        while node is None and has_node:
+            pos = randint(0, len(self.nodes)-1)
+            if len(self.nodes[pos]) != 5 :
+                self.nodes[pos].append(False)
+                return pos
+        return None
+
+    def init_solution(self):
         all_solutions = []
         for i in range(len(self.trucks)):
             current_solution = []
             truck = self.trucks[i]
             has_nodes = True
-            while truck > 0 and has_nodes:
-                if len(current_solution) == 0:
-                    node = self.find_closest_afordable_node(truck, self.deposit[1], self.deposit[2])
-                else:
-                    (xTruck, yTruck) = self.retrieve_data(current_solution[-1])
-                    node = self.find_closest_afordable_node(truck, xTruck, yTruck)
+            while has_nodes and len(current_solution) < 11:
+                node = self.find_random_node()
                 if node is None:
                     has_nodes = False # has no more close nodes with enough capacity to supply
                 else:
@@ -121,13 +138,17 @@ class cvrp:
                     truck = truck - int(self.get_cost(node)) # update truck capacity
             self.trucks[i] = truck # update truck capacity
             all_solutions.append(current_solution)
+        return all_solutions
+
+    def hill_climbing(self):
+        all_solutions = self.init_solution()
 
         # generate neighborhood
         # running through neighbor until there is no other change
             # look for the best change
             # execute change
 
-        return all_solutions
+        return 0
 
     def calc_cost_route(self, nodes):
         total = 0
