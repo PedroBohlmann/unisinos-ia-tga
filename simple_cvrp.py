@@ -59,10 +59,8 @@ class cvrp:
         return self.nodes[int(index)][1],self.nodes[int(index)][2]
 
     def printStatus(self):
-        print("======")
         print("STATUS")
         print("======")
-        print("Quantidade Depositos = ", self.nodes_count)
         print("Capacidade = ", self.capacity)
         print("Deposito = ", self.deposit)
         print("Distancia total = ", self.total_distance)
@@ -72,7 +70,8 @@ class cvrp:
         for i in range(len(self.nodes)):
             if len(self.nodes[i]) == 5:
                 total += 1
-        print(total)
+        print("Quantidade Depositos = ", len(self.nodes))
+        print("Nós percorridos =", total)
 
     def init_trucks(self):
         for i in range(self.truck_count):
@@ -92,36 +91,31 @@ class cvrp:
                 count += 1
         return count
 
-    def find_closest_afordable_node(self, truck, xTruck, yTruck):
+    def find_random_node(self, truck):
+        node = None
+        has_node = self.count_available_nodes() > 0
+        smallest_node = self.get_lowest_available_node()
+        while node is None and has_node and truck >= smallest_node[3]:
+            pos = randint(0, len(self.nodes)-1)
+            if len(self.nodes[pos]) != 5 and truck-self.nodes[pos][3] >= 0:
+                self.nodes[pos].append(False)
+                return pos
+        return None
+
+    def get_lowest_available_node(self):
         smallest_pos = self.get_first_not_flagged_node()
         if smallest_pos is None:
             return None
 
-        (xSmall, ySmall) = self.retrieve_data(smallest_pos)
-
-        smallest_cost = self.calc_cost(xSmall, xTruck, ySmall, yTruck)
-
+        smallest_node = self.nodes[smallest_pos]
         pos = 0
         for node in self.nodes:
-            cost = self.calc_cost(node[1], xTruck, node[2], yTruck)
-            if cost < smallest_cost and len(node) != 5 and (truck-int(node[3]) >= 0):
-                smallest_cost = cost
+            if node[3] < smallest_node[3] and len(node) != 5:
+                smallest_node = node
                 smallest_pos = pos
-            pos = pos + 1
-        if (truck-int(self.nodes[smallest_pos][3])) < 0:
-            return None
-        self.nodes[smallest_pos].append(False)
-        return smallest_pos
+            pos += 1
 
-    def find_random_node(self):
-        node = None
-        has_node = self.count_available_nodes() > 0
-        while node is None and has_node:
-            pos = randint(0, len(self.nodes)-1)
-            if len(self.nodes[pos]) != 5 :
-                self.nodes[pos].append(False)
-                return pos
-        return None
+        return smallest_node
 
     def init_solution(self):
         all_solutions = []
@@ -129,8 +123,8 @@ class cvrp:
             current_solution = []
             truck = self.trucks[i]
             has_nodes = True
-            while has_nodes and len(current_solution) < 11:
-                node = self.find_random_node()
+            while has_nodes:
+                node = self.find_random_node(truck)
                 if node is None:
                     has_nodes = False # has no more close nodes with enough capacity to supply
                 else:
