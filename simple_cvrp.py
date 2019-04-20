@@ -21,6 +21,12 @@ class cvrp:
         self.solution = self.init_solution()
         self.total_distance = self.calc_total_distance()
 
+        self.printStatus()        
+        self.solution = self.hill_climbing()
+        print("Depois do hillclimbing")
+        self.total_distance = self.calc_total_distance()
+        self.printStatus()
+
     def init_data(self,filename):
         node_coord = False
         node_demand = False
@@ -135,14 +141,46 @@ class cvrp:
         return all_solutions
 
     def hill_climbing(self):
-        all_solutions = self.init_solution()
+        all_solutions = self.solution
+            
+        for solution_pos in range(len(all_solutions)):
+            solution = all_solutions[solution_pos]
 
-        # generate neighborhood
-        # running through neighbor until there is no other change
-            # look for the best change
-            # execute change
+            for i in range(len(solution)):
+                best_change_total = None
+                best_change_pos = None
+                for j in range(i+1, len(solution)):
+                    distance_a_before = self.calc_distance_around_node_in_solution(solution[i], solution, i)
+                    distance_b_before = self.calc_distance_around_node_in_solution(solution[j], solution, j)
+                    total_before = distance_a_before + distance_b_before
 
-        return 0
+                    # do change
+                    aux = solution[i]
+                    solution[i] = solution[j]
+                    solution[j] = aux
+
+                    # calc the same distance
+                    distance_a_after = self.calc_distance_around_node_in_solution(solution[i], solution, i)
+                    distance_b_after = self.calc_distance_around_node_in_solution(solution[j], solution, j)
+                    total_after = distance_a_after + distance_b_after
+
+                    # change back because original order was ok
+                    aux = solution[i]
+                    solution[i] = solution[j]
+                    solution[j] = aux
+
+                    if total_after < total_before:
+                        if best_change_total is None:
+                            best_change_pos = j
+                            best_change_total = total_after
+                        elif best_change_total > total_after:
+                            best_change_pos = j
+                            best_change_total = total_after
+                if best_change_total is not None:
+                    aux = solution[i]
+                    solution[i] = solution[best_change_pos]
+                    solution[best_change_pos] = aux
+        return all_solutions
 
     def calc_cost_route(self, nodes):
         total = 0
@@ -163,6 +201,23 @@ class cvrp:
         for solution in self.solution:
             total += self.calc_cost_route(solution)
         return total
+
+    def calc_distance_around_node_in_solution(self, node_pos, solution, solution_pos):
+        total_distance = 0
+        if solution_pos == 0:
+            total_distance += self.calc_distance(self.nodes[node_pos], self.deposit)
+        else:
+            total_distance += self.calc_distance(self.nodes[node_pos], self.nodes[solution[solution_pos - 1]])
+        
+        if solution_pos == len(solution)-1:
+            total_distance += self.calc_distance(self.nodes[node_pos], self.deposit)
+        else:
+            total_distance += self.calc_distance(self.nodes[node_pos], self.nodes[solution[solution_pos + 1]])
+        return total_distance
+        
+
+    def calc_distance(self, node_a, node_b):
+        return self.calc_cost(node_a[1], node_b[1], node_a[2], node_b[2])
 
     def calc_cost(self, xa, xb, ya, yb):
         return math.sqrt(((xa-xb) * (xa-xb))+((ya-yb) * (ya-yb)))
@@ -200,4 +255,3 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
 
     CVRP = cvrp(options.filename, options.truck_count)
-    CVRP.printStatus()
