@@ -4,8 +4,7 @@ import random, sys, copy, math
 from optparse import OptionParser
 from random import randint
 
-#          truck,node1,node2,node3,node4
-solution = [[1,1,2,3,4,5,6,7,8,9,10]]
+solution = []
 
 class cvrp:
     def __init__(self, filename, truck_count):
@@ -21,7 +20,7 @@ class cvrp:
         self.solution = self.init_solution()
         self.total_distance = self.calc_total_distance()
 
-        self.printStatus()        
+        self.printStatus()
         self.solution = self.hill_climbing()
         print("Depois do hillclimbing")
         self.total_distance = self.calc_total_distance()
@@ -89,7 +88,7 @@ class cvrp:
             if len(node) != 5:
                 return pos
             pos = pos + 1
-    
+
     def count_available_nodes(self):
         count = 0
         for node in self.nodes:
@@ -142,7 +141,7 @@ class cvrp:
 
     def hill_climbing(self):
         all_solutions = self.solution
-            
+
         for solution_pos in range(len(all_solutions)):
             solution = all_solutions[solution_pos]
 
@@ -164,6 +163,9 @@ class cvrp:
                     distance_b_after = self.calc_distance_around_node_in_solution(solution[j], solution, j)
                     total_after = distance_a_after + distance_b_after
 
+                    # print('total before', total_before)
+                    # print('total after', total_after)
+
                     # change back because original order was ok
                     aux = solution[i]
                     solution[i] = solution[j]
@@ -184,16 +186,24 @@ class cvrp:
 
     def calc_cost_route(self, nodes):
         total = 0
-        for i in range(len(nodes)):
-            node = self.nodes[i]
-            if i == 0:
+        index = 0
+        selected_nodes = []
+
+        for i in nodes:
+            selected_nodes.append(self.nodes[i])
+
+        # print('self nodes',self.nodes)
+        # print('nodes',selected_nodes)
+        for node in selected_nodes:
+            if index == 0:
                 total += self.calc_cost(self.deposit[1], node[1], self.deposit[2], node[2])
-                if i+1 < len(nodes):
-                    total += self.calc_cost(node[1], self.nodes[i+1][1], node[2], self.nodes[i+1][2])
-            elif i == len(nodes)-1:
+            if index+1 < len(nodes):
+                total += self.calc_cost(node[1], self.nodes[index+1][1], node[2], self.nodes[index+1][2])
+            elif index == len(nodes)-1:
                 total += self.calc_cost(node[1], self.deposit[1], node[2], self.deposit[2])
             else:
-                total += self.calc_cost(node[1], self.nodes[i+1][1], node[2], self.nodes[i+1][2])
+                total += self.calc_cost(node[1], self.nodes[index+1][1], node[2], self.nodes[index+1][2])
+            index +=1
         return total
 
     def calc_total_distance(self):
@@ -208,13 +218,13 @@ class cvrp:
             total_distance += self.calc_distance(self.nodes[node_pos], self.deposit)
         else:
             total_distance += self.calc_distance(self.nodes[node_pos], self.nodes[solution[solution_pos - 1]])
-        
+
         if solution_pos == len(solution)-1:
             total_distance += self.calc_distance(self.nodes[node_pos], self.deposit)
         else:
             total_distance += self.calc_distance(self.nodes[node_pos], self.nodes[solution[solution_pos + 1]])
         return total_distance
-        
+
 
     def calc_distance(self, node_a, node_b):
         return self.calc_cost(node_a[1], node_b[1], node_a[2], node_b[2])
