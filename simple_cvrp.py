@@ -7,7 +7,7 @@ from random import randint
 solution = []
 
 class cvrp:
-    def __init__(self, filename, truck_count):
+    def __init__(self, filename, truck_count, repetitions):
         self.filename = filename
         self.nodes = []
         self.nodes_count = 0
@@ -19,10 +19,10 @@ class cvrp:
         self.init_trucks()
         self.solution = self.init_solution()
         self.total_distance = self.calc_total_distance()
-
+        self.repetitions = repetitions
         self.printStatus()
         self.solution = self.hill_climbing()
-        print("Depois do hillclimbing")
+        print("\nDepois do hillclimbing\n")
         self.total_distance = self.calc_total_distance()
         self.printStatus()
 
@@ -141,7 +141,7 @@ class cvrp:
 
     def hill_climbing(self):
         all_solutions = self.solution
-        for h in range(1000):
+        for h in range(self.repetitions):
             for solution_pos in range(len(all_solutions)):
                 solution = all_solutions[solution_pos]
 
@@ -316,7 +316,9 @@ if __name__ == "__main__":
                      type="string")
     parser.add_option("--trucks", dest="truck_count", help="Quantity of trucks", default="4",
                      type="int")
+    parser.add_option("--repetitions", dest="repetitions", help="Number of repetitions", default="1000",
+                     type="int")
 
     (options, args) = parser.parse_args()
 
-    CVRP = cvrp(options.filename, options.truck_count)
+    CVRP = cvrp(options.filename, options.truck_count, options.repetitions)
