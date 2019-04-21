@@ -141,7 +141,6 @@ class cvrp:
 
     def hill_climbing(self):
         all_solutions = self.solution
-
         for solution_pos in range(len(all_solutions)):
             solution = all_solutions[solution_pos]
 
@@ -186,6 +185,11 @@ class cvrp:
         for solution_pos in range(len(all_solutions)):
             solution = all_solutions[solution_pos]
 
+            best_change_total = None
+            best_change_pos_current_solution = None
+            best_change_pos_next_solution = None
+            best_change_solution = None
+            
             for next_solution_pos in range(solution_pos+1, len(all_solutions)):
                 next_solution = all_solutions[next_solution_pos]
 
