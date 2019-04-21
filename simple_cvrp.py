@@ -141,100 +141,101 @@ class cvrp:
 
     def hill_climbing(self):
         all_solutions = self.solution
-        for solution_pos in range(len(all_solutions)):
-            solution = all_solutions[solution_pos]
+        for h in range(1000):
+            for solution_pos in range(len(all_solutions)):
+                solution = all_solutions[solution_pos]
 
-            for i in range(len(solution)):
-                best_change_total = None
-                best_change_pos = None
-                for j in range(i+1, len(solution)):
-                    distance_a_before = self.calc_distance_around_node_in_solution(solution[i], solution, i)
-                    distance_b_before = self.calc_distance_around_node_in_solution(solution[j], solution, j)
-                    total_before = distance_a_before + distance_b_before
+                for i in range(len(solution)):
+                    best_change_total = None
+                    best_change_pos = None
+                    for j in range(i+1, len(solution)):
+                        distance_a_before = self.calc_distance_around_node_in_solution(solution[i], solution, i)
+                        distance_b_before = self.calc_distance_around_node_in_solution(solution[j], solution, j)
+                        total_before = distance_a_before + distance_b_before
 
-                    # do change
-                    aux = solution[i]
-                    solution[i] = solution[j]
-                    solution[j] = aux
+                        # do change
+                        aux = solution[i]
+                        solution[i] = solution[j]
+                        solution[j] = aux
 
-                    # calc the same distance
-                    distance_a_after = self.calc_distance_around_node_in_solution(solution[i], solution, i)
-                    distance_b_after = self.calc_distance_around_node_in_solution(solution[j], solution, j)
-                    total_after = distance_a_after + distance_b_after
+                        # calc the same distance
+                        distance_a_after = self.calc_distance_around_node_in_solution(solution[i], solution, i)
+                        distance_b_after = self.calc_distance_around_node_in_solution(solution[j], solution, j)
+                        total_after = distance_a_after + distance_b_after
 
-                    # print('total before', total_before)
-                    # print('total after', total_after)
+                        # print('total before', total_before)
+                        # print('total after', total_after)
 
-                    # change back because original order was ok
-                    aux = solution[i]
-                    solution[i] = solution[j]
-                    solution[j] = aux
+                        # change back because original order was ok
+                        aux = solution[i]
+                        solution[i] = solution[j]
+                        solution[j] = aux
 
-                    if total_after < total_before:
-                        if best_change_total is None:
-                            best_change_pos = j
-                            best_change_total = total_after
-                        elif best_change_total > total_after:
-                            best_change_pos = j
-                            best_change_total = total_after
-                if best_change_total is not None:
-                    aux = solution[i]
-                    solution[i] = solution[best_change_pos]
-                    solution[best_change_pos] = aux
-        # changes between trucks
-        for solution_pos in range(len(all_solutions)):
-            solution = all_solutions[solution_pos]
-
-            best_change_total = None
-            best_change_pos_current_solution = None
-            best_change_pos_next_solution = None
-            best_change_solution = None
-            
-            for next_solution_pos in range(solution_pos+1, len(all_solutions)):
-                next_solution = all_solutions[next_solution_pos]
+                        if total_after < total_before:
+                            if best_change_total is None:
+                                best_change_pos = j
+                                best_change_total = total_after
+                            elif best_change_total > total_after:
+                                best_change_pos = j
+                                best_change_total = total_after
+                    if best_change_total is not None:
+                        aux = solution[i]
+                        solution[i] = solution[best_change_pos]
+                        solution[best_change_pos] = aux
+            # changes between trucks
+            for solution_pos in range(len(all_solutions)):
+                solution = all_solutions[solution_pos]
 
                 best_change_total = None
                 best_change_pos_current_solution = None
                 best_change_pos_next_solution = None
                 best_change_solution = None
+                
+                for next_solution_pos in range(solution_pos+1, len(all_solutions)):
+                    next_solution = all_solutions[next_solution_pos]
 
-                for i in range(len(solution)):
-                    for j in range(len(next_solution)):
-                        if (self.trucks[solution_pos] + self.get_cost(solution[i])) - self.get_cost(next_solution[j]) >= 0 and (self.trucks[next_solution_pos] + self.get_cost(next_solution[j]) - self.get_cost(solution[i])) >= 0: # check if truck has enough capacity
-                            distance_a_before = self.calc_distance_around_node_in_solution(next_solution[j], solution, i)
-                            distance_b_before = self.calc_distance_around_node_in_solution(solution[i], next_solution, j)
-                            total_before = distance_a_before + distance_b_before
+                    best_change_total = None
+                    best_change_pos_current_solution = None
+                    best_change_pos_next_solution = None
+                    best_change_solution = None
 
-                            aux = solution[i]
-                            solution[i] = next_solution[j]
-                            next_solution[j] = aux
+                    for i in range(len(solution)):
+                        for j in range(len(next_solution)):
+                            if (self.trucks[solution_pos] + self.get_cost(solution[i])) - self.get_cost(next_solution[j]) >= 0 and (self.trucks[next_solution_pos] + self.get_cost(next_solution[j]) - self.get_cost(solution[i])) >= 0: # check if truck has enough capacity
+                                distance_a_before = self.calc_distance_around_node_in_solution(next_solution[j], solution, i)
+                                distance_b_before = self.calc_distance_around_node_in_solution(solution[i], next_solution, j)
+                                total_before = distance_a_before + distance_b_before
 
-                            distance_a_after = self.calc_distance_around_node_in_solution(next_solution[j], solution, i)
-                            distance_b_after = self.calc_distance_around_node_in_solution(solution[i], next_solution, j)
-                            total_after = distance_a_after + distance_b_after
+                                aux = solution[i]
+                                solution[i] = next_solution[j]
+                                next_solution[j] = aux
 
-                            aux = solution[i]
-                            solution[i] = next_solution[j]
-                            next_solution[j] = aux
-                            if total_after < total_before: # check if is better with change
-                                if best_change_total is None:
-                                    best_change_pos_current_solution = i
-                                    best_change_pos_next_solution = j
-                                    best_change_total = total_after
-                                    best_change_solution = next_solution_pos
-                                elif best_change_total > total_after:
-                                    best_change_pos_current_solution = i
-                                    best_change_pos_next_solution = j
-                                    best_change_total = total_after
-                                    best_change_solution = next_solution_pos
-            if best_change_total is not None:
-                # update truck capacity
-                self.trucks[solution_pos] += self.get_cost(solution[best_change_pos_current_solution]) - self.get_cost(all_solutions[best_change_solution][best_change_pos_next_solution])
-                self.trucks[best_change_solution] += self.get_cost(all_solutions[best_change_solution][best_change_pos_next_solution]) - self.get_cost(solution[best_change_pos_current_solution])
-                # change
-                aux = solution[best_change_pos_current_solution]
-                solution[best_change_pos_current_solution] = all_solutions[best_change_solution][best_change_pos_next_solution]
-                next_solution[best_change_pos_next_solution] = aux             
+                                distance_a_after = self.calc_distance_around_node_in_solution(next_solution[j], solution, i)
+                                distance_b_after = self.calc_distance_around_node_in_solution(solution[i], next_solution, j)
+                                total_after = distance_a_after + distance_b_after
+
+                                aux = solution[i]
+                                solution[i] = next_solution[j]
+                                next_solution[j] = aux
+                                if total_after < total_before: # check if is better with change
+                                    if best_change_total is None:
+                                        best_change_pos_current_solution = i
+                                        best_change_pos_next_solution = j
+                                        best_change_total = total_after
+                                        best_change_solution = next_solution_pos
+                                    elif best_change_total > total_after:
+                                        best_change_pos_current_solution = i
+                                        best_change_pos_next_solution = j
+                                        best_change_total = total_after
+                                        best_change_solution = next_solution_pos
+                if best_change_total is not None:
+                    # update truck capacity
+                    self.trucks[solution_pos] += self.get_cost(solution[best_change_pos_current_solution]) - self.get_cost(all_solutions[best_change_solution][best_change_pos_next_solution])
+                    self.trucks[best_change_solution] += self.get_cost(all_solutions[best_change_solution][best_change_pos_next_solution]) - self.get_cost(solution[best_change_pos_current_solution])
+                    # change
+                    aux = solution[best_change_pos_current_solution]
+                    solution[best_change_pos_current_solution] = all_solutions[best_change_solution][best_change_pos_next_solution]
+                    next_solution[best_change_pos_next_solution] = aux             
 
         return all_solutions
 
