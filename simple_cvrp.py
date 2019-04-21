@@ -182,6 +182,56 @@ class cvrp:
                     aux = solution[i]
                     solution[i] = solution[best_change_pos]
                     solution[best_change_pos] = aux
+        # changes between trucks
+        for solution_pos in range(len(all_solutions)):
+            solution = all_solutions[solution_pos]
+
+            for next_solution_pos in range(solution_pos+1, len(all_solutions)):
+                next_solution = all_solutions[next_solution_pos]
+
+                best_change_total = None
+                best_change_pos_current_solution = None
+                best_change_pos_next_solution = None
+                best_change_solution = None
+
+                for i in range(len(solution)):
+                    for j in range(len(next_solution)):
+                        if (self.trucks[solution_pos] + self.get_cost(solution[i])) - self.get_cost(next_solution[j]) >= 0 and (self.trucks[next_solution_pos] + self.get_cost(next_solution[j]) - self.get_cost(solution[i])) >= 0: # check if truck has enough capacity
+                            distance_a_before = self.calc_distance_around_node_in_solution(next_solution[j], solution, i)
+                            distance_b_before = self.calc_distance_around_node_in_solution(solution[i], next_solution, j)
+                            total_before = distance_a_before + distance_b_before
+
+                            aux = solution[i]
+                            solution[i] = next_solution[j]
+                            next_solution[j] = aux
+
+                            distance_a_after = self.calc_distance_around_node_in_solution(next_solution[j], solution, i)
+                            distance_b_after = self.calc_distance_around_node_in_solution(solution[i], next_solution, j)
+                            total_after = distance_a_after + distance_b_after
+
+                            aux = solution[i]
+                            solution[i] = next_solution[j]
+                            next_solution[j] = aux
+                            if total_after < total_before: # check if is better with change
+                                if best_change_total is None:
+                                    best_change_pos_current_solution = i
+                                    best_change_pos_next_solution = j
+                                    best_change_total = total_after
+                                    best_change_solution = next_solution_pos
+                                elif best_change_total > total_after:
+                                    best_change_pos_current_solution = i
+                                    best_change_pos_next_solution = j
+                                    best_change_total = total_after
+                                    best_change_solution = next_solution_pos
+            if best_change_total is not None:
+                # update truck capacity
+                self.trucks[solution_pos] += self.get_cost(solution[best_change_pos_current_solution]) - self.get_cost(all_solutions[best_change_solution][best_change_pos_next_solution])
+                self.trucks[best_change_solution] += self.get_cost(all_solutions[best_change_solution][best_change_pos_next_solution]) - self.get_cost(solution[best_change_pos_current_solution])
+                # change
+                aux = solution[best_change_pos_current_solution]
+                solution[best_change_pos_current_solution] = all_solutions[best_change_solution][best_change_pos_next_solution]
+                next_solution[best_change_pos_next_solution] = aux             
+
         return all_solutions
 
     def calc_cost_route(self, nodes):
@@ -203,7 +253,7 @@ class cvrp:
                 total += self.calc_cost(node[1], self.deposit[1], node[2], self.deposit[2])
             else:
                 total += self.calc_cost(node[1], self.nodes[index+1][1], node[2], self.nodes[index+1][2])
-            index +=1
+            index += 1
         return total
 
     def calc_total_distance(self):
