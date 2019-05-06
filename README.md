@@ -6,9 +6,12 @@ O problema de roteamento de veículos capacitados é definido por um conjunto 
 
 ## Andamento
 Como usar algoritmo de exemplo para extracao dos dados
+* --file caminho_para_instancia
+* --trucks numero_de_caminhoes
+* --repetitions numero_de_execucoes_do_algoritmo
 
 ```bash
-& python simple_cvrp.py --file "CVRP/test.txt"
+& python3 simple_cvrp.py --file CVRP/eil33.vrp.txt --trucks 4 --repetitions 1000
 ```
 
 ## Objetivo
