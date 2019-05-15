@@ -4,8 +4,6 @@ import random, sys, copy, math
 from optparse import OptionParser
 from random import randint
 
-solution = []
-
 class cvrp:
     def __init__(self, filename, truck_count, repetitions):
         self.filename = filename
@@ -50,7 +48,6 @@ class cvrp:
                         nodes_count = nodes_count + 1
                         (deposit, x, y) = line.split()
                         self.nodes.append([deposit, int(x), int(y), 0])
-                        # print(self.nodes)
                     elif node_demand == True:
                         self.nodes_count = nodes_count
                         (deposit, quantity) = line.split()
@@ -70,7 +67,6 @@ class cvrp:
         print("Deposito = ", self.deposit)
         print("Distancia total = ", self.total_distance)
         print("Trucks = ", self.trucks)
-        # print("Nós:")
         total = 0
         for i in range(len(self.nodes)):
             if len(self.nodes[i]) == 5:
@@ -139,10 +135,8 @@ class cvrp:
             all_solutions.append(current_solution)
         return all_solutions
 
-    def hill_climbing(self):
-        all_solutions = self.solution
-        for h in range(self.repetitions):
-            for solution_pos in range(len(all_solutions)):
+    def orderSolution(self, all_solutions):
+        for solution_pos in range(len(all_solutions)):
                 solution = all_solutions[solution_pos]
 
                 for i in range(len(solution)):
@@ -162,11 +156,8 @@ class cvrp:
                         distance_a_after = self.calc_distance_around_node_in_solution(solution[i], solution, i)
                         distance_b_after = self.calc_distance_around_node_in_solution(solution[j], solution, j)
                         total_after = distance_a_after + distance_b_after
-
-                        # print('total before', total_before)
-                        # print('total after', total_after)
-
-                        # change back because original order was ok
+                        
+                        # change back because original order
                         aux = solution[i]
                         solution[i] = solution[j]
                         solution[j] = aux
@@ -182,8 +173,10 @@ class cvrp:
                         aux = solution[i]
                         solution[i] = solution[best_change_pos]
                         solution[best_change_pos] = aux
-            # changes between trucks
-            for solution_pos in range(len(all_solutions)):
+        return all_solutions
+
+    def changeBetweenTrucks(self, all_solutions):
+        for solution_pos in range(len(all_solutions)):
                 solution = all_solutions[solution_pos]
 
                 best_change_total = None
@@ -235,7 +228,14 @@ class cvrp:
                     # change
                     aux = solution[best_change_pos_current_solution]
                     solution[best_change_pos_current_solution] = all_solutions[best_change_solution][best_change_pos_next_solution]
-                    next_solution[best_change_pos_next_solution] = aux             
+                    next_solution[best_change_pos_next_solution] = aux    
+        return all_solutions    
+
+    def hill_climbing(self):
+        all_solutions = self.solution
+        for i in range(self.repetitions):
+            all_solutions = self.orderSolution(all_solutions)
+            all_solutions = self.changeBetweenTrucks(all_solutions)              
 
         return all_solutions
 
@@ -246,9 +246,7 @@ class cvrp:
 
         for i in nodes:
             selected_nodes.append(self.nodes[i])
-
-        # print('self nodes',self.nodes)
-        # print('nodes',selected_nodes)
+        
         for node in selected_nodes:
             if index == 0:
                 total += self.calc_cost(self.deposit[1], node[1], self.deposit[2], node[2])
@@ -292,22 +290,6 @@ class cvrp:
             return None
         else:
             return self.nodes[pos][3]
-
-    def check_quantity(self):
-        qtyOk = 0
-        count = 0
-        truckQty = int(self.capacity)
-        for trip in solution:
-            node_length = len(trip)-1
-            for node in range(0, node_length):
-                print(int(self.nodes[int(node)][3]))
-                truckQty = truckQty - int(self.nodes[int(node)][3])
-                if truckQty < 0:
-                    qtyOk = qtyOk -1
-                print("current quantity", truckQty)
-        if qtyOk == 0:
-            qtyOk = qtyOk+1
-        return qtyOk
 
 if __name__ == "__main__":
 
